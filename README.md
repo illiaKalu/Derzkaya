@@ -1,9 +1,9 @@
 # Derzkaya
 IDAP first app
 
-what I need : 
-Fom designer:
-Images:
+what I need : <br>
+From designer: <br>
+Images: <br>
 <ul>
 <li>icon</li>
 <li>background</li>
