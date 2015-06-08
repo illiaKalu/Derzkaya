@@ -1,13 +1,20 @@
 package com.dev.illiakaliuzhnyi.derzkaya;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.os.SystemClock;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Chronometer;
 
 
-public class RecordActivity extends ActionBarActivity {
+public class RecordActivity extends Activity {
+
+    Chronometer chronometer;
+    Boolean isRecording = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,5 +46,22 @@ public class RecordActivity extends ActionBarActivity {
 
     public void backToMainActivity(View view) {
         finish();
+    }
+
+    public void startRecord(View view) {
+
+        if(isRecording){
+            chronometer.stop();
+            isRecording = false;
+
+            Intent startActivityResult = new Intent(this, ResultActivity.class);
+            startActivity(startActivityResult);
+        }else{
+            chronometer = (Chronometer) findViewById(R.id.chronometer);
+            chronometer.start();
+            isRecording = true;
+        }
+
+
     }
 }

@@ -7,7 +7,17 @@
     tools:context="com.dev.illiakaliuzhnyi.derzkaya.RecordActivity"
     android:background="#ff323232"
     android:orientation="vertical"
-    android:gravity="bottom|center">
+    android:gravity="bottom|center"
+    >
+
+    <Chronometer
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/chronometer"
+        android:format="%s"
+        android:text="40sp"
+        android:layout_gravity="right"
+        android:layout_marginBottom="300dp" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -30,6 +40,7 @@
             android:layout_height="47dp"
             android:id="@+id/record"
             android:background="@drawable/record_image_button"
+            android:onClick="startRecord"
             android:layout_marginLeft="25dp"
             android:layout_marginRight="25dp" />
 
