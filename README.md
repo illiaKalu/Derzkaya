@@ -6,7 +6,8 @@ From designer: <br>
 Images: <br>
 <ul>
 <li>icon</li>
-<li>background</li>
+<li>background with lines ( see Derzkaya on iOS)</li>
+<li>background without lines( see Derzkaya on iOS)</li>
 <li>record button (redirect, NOT action)</li>
 <li>mainActivity image ( in the center of first screen) </li>
 <li>back arrow image button</li>
