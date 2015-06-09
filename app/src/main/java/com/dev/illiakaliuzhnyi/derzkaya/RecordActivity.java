@@ -143,6 +143,7 @@ public class RecordActivity extends Activity {
 
         if(isRecording){
             chronometer.stop();
+            //progressThread.destroy();
 
             if (mediaRecorder != null) {
                 mediaRecorder.stop();
@@ -185,7 +186,7 @@ public class RecordActivity extends Activity {
         mediaRecorder.setOutputFile(videoFile.getAbsolutePath());
         mediaRecorder.setPreviewDisplay(surfaceView.getHolder().getSurface());
 
-        mediaRecorder.setMaxDuration(23000);
+        mediaRecorder.setMaxDuration(22000); // delayed for 1 sec because of SMTH!
         mediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
             @Override
             public void onInfo(MediaRecorder mr, int what, int extra) {

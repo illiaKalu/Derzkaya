@@ -30,6 +30,9 @@ public class ResultActivity extends Activity {
         videoView = (VideoView)findViewById(R.id.videoView);
         videoView.setVideoPath(DCIMdir + "/myvideo.3gp");
 
+        videoView.pause();
+        videoView.seekTo(1);
+
         //videoView.setRotation((float)180);
 
         videoView.setOnTouchListener(new View.OnTouchListener() {
