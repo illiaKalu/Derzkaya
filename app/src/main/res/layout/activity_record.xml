@@ -8,7 +8,7 @@
     android:background="#ff323232"
     android:orientation="vertical"
     android:gravity="bottom|center"
-    >
+    android:weightSum="1">
 
     <Chronometer
         android:layout_width="wrap_content"
@@ -17,7 +17,22 @@
         android:format="%s"
         android:text="40sp"
         android:layout_gravity="right"
-        android:layout_marginBottom="300dp" />
+        android:layout_marginBottom="20dp" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="23"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:indeterminateDuration="23000"
+        android:layout_marginBottom="20dp" />
+
+    <SurfaceView
+        android:layout_width="320dp"
+        android:layout_height="320dp"
+        android:id="@+id/surfaceView"
+        android:layout_weight="0.67" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -38,7 +53,7 @@
         <ImageButton
             android:layout_width="51dp"
             android:layout_height="47dp"
-            android:id="@+id/record"
+            android:id="@+id/capture_button"
             android:background="@drawable/record_image_button"
             android:onClick="startRecord"
             android:layout_marginLeft="25dp"

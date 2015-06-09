@@ -1,19 +1,57 @@
 package com.dev.illiakaliuzhnyi.derzkaya;
 
 import android.app.Activity;
+import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.MediaController;
+import android.widget.VideoView;
+
+import java.io.File;
 
 
 public class ResultActivity extends Activity {
+
+    VideoView videoView;
+    Boolean isPlaying = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
+
+        File DCIMdir = Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+
+        videoView = (VideoView)findViewById(R.id.videoView);
+        videoView.setVideoPath(DCIMdir + "/myvideo.3gp");
+
+        //videoView.setRotation((float)180);
+
+        videoView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+               if(!videoView.isPlaying()){
+
+                   videoView.start();
+
+               }else{
+
+                   videoView.pause();
+
+               }
+
+
+
+                return false;
+            }
+        });
+
     }
 
     @Override

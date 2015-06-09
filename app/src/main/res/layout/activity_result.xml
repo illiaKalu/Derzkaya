@@ -23,13 +23,14 @@
         android:layout_height="207dp"
         android:id="@+id/videoView"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="30dp" />
+        android:layout_marginBottom="30dp"
+        android:clickable="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Save"
-        android:id="@+id/save_bitton"
+        android:id="@+id/save_button"
         android:onClick="saveResult" />
 
     <ImageButton
