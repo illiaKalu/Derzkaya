@@ -16,15 +16,16 @@
         android:layout_height="92dp"
         android:id="@+id/imageView2"
         android:background="@drawable/crown"
-        android:layout_marginBottom="25dp" />
+        android:layout_marginBottom="10dp" />
 
     <VideoView
-        android:layout_width="247dp"
-        android:layout_height="207dp"
+        android:layout_width="380dp"
+        android:layout_height="340dp"
         android:id="@+id/videoView"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="30dp"
-        android:clickable="true" />
+        android:layout_marginBottom="10dp"
+        android:clickable="true"
+        android:layout_weight="0.29" />
 
     <Button
         android:layout_width="wrap_content"
@@ -37,7 +38,7 @@
         android:layout_width="60dp"
         android:layout_height="52dp"
         android:id="@+id/imageButton"
-        android:layout_marginTop="25dp"
+        android:layout_marginTop="5dp"
         android:background="@drawable/facebook_share"
         android:onClick="shareOnFacebook"
         android:layout_weight="0.07" />

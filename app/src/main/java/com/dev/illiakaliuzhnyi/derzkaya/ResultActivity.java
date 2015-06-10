@@ -1,9 +1,11 @@
 package com.dev.illiakaliuzhnyi.derzkaya;
 
 import android.app.Activity;
+import android.graphics.Movie;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -12,28 +14,33 @@ import android.widget.MediaController;
 import android.widget.VideoView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 
 public class ResultActivity extends Activity {
 
     VideoView videoView;
-    Boolean isPlaying = false;
+
+    File DCIMdir;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
-        File DCIMdir = Environment
+
+
+        DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 
+
+
         videoView = (VideoView)findViewById(R.id.videoView);
-        videoView.setVideoPath(DCIMdir + "/myvideo.3gp");
+        videoView.setVideoPath(DCIMdir + "/myvideo.mp4");
 
-        videoView.pause();
-        videoView.seekTo(1);
-
-        //videoView.setRotation((float)180);
 
         videoView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -54,6 +61,24 @@ public class ResultActivity extends Activity {
                 return false;
             }
         });
+
+    }
+
+    private void mergeVideoAndAudio() throws IOException {
+
+        Log.d("My_TAG", "START MUX");
+        Mp4ParserAudioMuxer mp4parser = new Mp4ParserAudioMuxer();
+
+        String audioPath = "/storage/emulated/0/DCIM/derzkayaaac.aac";
+        String videoPath = "/storage/emulated/0/DCIM/myvideo.mp4";
+
+        mp4parser.mux(videoPath, audioPath, DCIMdir + "/videowithsound.mp4");
+
+        Log.d("My_TAG", audioPath + " - working with this audio");
+        Log.d("My_TAG", videoPath + " - working with this video");
+        Log.d("My_TAG", DCIMdir + "/videowithsound.mp4" + "   - Directory of output");
+
+        Log.d("My_TAG", "I AM DONE");
 
     }
 
@@ -85,8 +110,13 @@ public class ResultActivity extends Activity {
         // add new music file to tape and save
     }
 
-    public void shareOnFacebook(View view) {
+    public void shareOnFacebook(View view) throws IOException {
 
         // share on facebook button realization
-    }
+
+        // TEMPORARY!
+       // mergeVideoAndAudio();
+
+
 }
+    }

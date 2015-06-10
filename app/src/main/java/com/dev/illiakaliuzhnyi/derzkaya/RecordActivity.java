@@ -1,8 +1,10 @@
 package com.dev.illiakaliuzhnyi.derzkaya;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
+import android.media.AudioManager;
 import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -10,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
@@ -50,7 +53,7 @@ public class RecordActivity extends Activity {
         File DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 
-        videoFile = new File(DCIMdir, "myvideo.3gp");
+        videoFile = new File(DCIMdir, "myvideo.mp4");
         surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
 
         SurfaceHolder holder = surfaceView.getHolder();
@@ -74,12 +77,14 @@ public class RecordActivity extends Activity {
                     }
                 });
 
-                camera.setDisplayOrientation(90);
+                //camera.setDisplayOrientation(90);
 
 
                 try {
+
                     camera.setPreviewDisplay(holder);
                     camera.startPreview();
+                    camera.setDisplayOrientation(90);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -188,14 +193,15 @@ public class RecordActivity extends Activity {
         mediaRecorder = new MediaRecorder();
 
         mediaRecorder.setCamera(camera);
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        mediaRecorder.setProfile(CamcorderProfile
-                .get(CamcorderProfile.QUALITY_HIGH));
+        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        mediaRecorder.setOrientationHint(90);
+
         mediaRecorder.setOutputFile(videoFile.getAbsolutePath());
         mediaRecorder.setPreviewDisplay(surfaceView.getHolder().getSurface());
 
-        mediaRecorder.setMaxDuration(22000); // delayed for 1 sec because of SMTH!
+        mediaRecorder.setMaxDuration(23000); // delayed for 1 sec because of SMTH!
         mediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
             @Override
             public void onInfo(MediaRecorder mr, int what, int extra) {
