@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -33,7 +34,7 @@ public class RecordActivity extends Activity {
     Thread progressThread;
     private ProgressBar mProgress;
     private Handler mHandler = new Handler();
-
+    MediaPlayer mediaPlayer;
     File videoFile;
 
 
@@ -43,7 +44,8 @@ public class RecordActivity extends Activity {
         setContentView(R.layout.activity_record);
 
 
-
+        // !!
+        mediaPlayer = MediaPlayer.create(RecordActivity.this, R.raw.derzkaya);
 
         File DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -90,7 +92,7 @@ public class RecordActivity extends Activity {
 
             @Override
             public void surfaceDestroyed(SurfaceHolder holder) {
-                //camera.release();
+//                camera.release();
             }
         });
 
@@ -108,6 +110,7 @@ public class RecordActivity extends Activity {
     protected void onPause() {
         super.onPause();
         releaseMediaRecorder();
+        mediaPlayer.release();
         if (camera != null)
             camera.release();
         camera = null;
@@ -141,7 +144,10 @@ public class RecordActivity extends Activity {
 
     public void startRecord(View view) {
 
-        if(isRecording){
+        if(isRecording) {
+
+            mediaPlayer.stop();
+            mediaPlayer.release();
             chronometer.stop();
             //progressThread.destroy();
 
@@ -155,6 +161,8 @@ public class RecordActivity extends Activity {
             finish();
         }else{
 
+
+
             if (prepareVideoRecorder()) {
                 mediaRecorder.start();
             } else {
@@ -166,6 +174,7 @@ public class RecordActivity extends Activity {
             chronometer.setBase(SystemClock.elapsedRealtime());
             chronometer.start();
             progressThread.start();
+            mediaPlayer.start();
             isRecording = true;
         }
 
@@ -197,8 +206,12 @@ public class RecordActivity extends Activity {
                         releaseMediaRecorder();
                     }
 
+                    mediaPlayer.stop();
+                    mediaPlayer.release();
+
                     Intent startActivityResult = new Intent(RecordActivity.this, ResultActivity.class);
                     startActivity(startActivityResult);
+
 
                     finish();
 
