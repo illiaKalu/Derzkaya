@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
+import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioRecord;
 import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -13,18 +15,22 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Chronometer;
 
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 
 import java.io.File;
-
+import java.io.IOException;
 
 
 public class RecordActivity extends Activity {
@@ -39,12 +45,20 @@ public class RecordActivity extends Activity {
     private Handler mHandler = new Handler();
     MediaPlayer mediaPlayer;
     File videoFile;
+    ImageButton microphone_button;
+    AudioManager audioManager;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);
+
+
+        audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
+        audioManager.setMode(AudioManager.MODE_IN_CALL);
+
 
 
         // !!
@@ -79,6 +93,33 @@ public class RecordActivity extends Activity {
 
                 //camera.setDisplayOrientation(90);
 
+                microphone_button = (ImageButton) findViewById(R.id.microphoneAction);
+
+                microphone_button.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+
+                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                            Log.d("MY_TAG", "LOL i am pressed");
+
+                            audioManager.setMicrophoneMute(true);
+
+                            mediaPlayer.setVolume(0, 0);
+
+
+                        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                            Log.d("MY_TAG", "LOL i am released");
+
+                            audioManager.setMicrophoneMute(false);
+
+                            mediaPlayer.setVolume(1, 1);
+
+                        }
+
+                        return true;
+                    }
+                });
+
 
                 try {
 
@@ -89,6 +130,7 @@ public class RecordActivity extends Activity {
                     e.printStackTrace();
                 }
             }
+
 
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format,
@@ -118,7 +160,7 @@ public class RecordActivity extends Activity {
         mediaPlayer.release();
         if (camera != null)
             camera.release();
-        camera = null;
+            camera = null;
     }
 
     @Override
@@ -193,15 +235,21 @@ public class RecordActivity extends Activity {
         mediaRecorder = new MediaRecorder();
 
         mediaRecorder.setCamera(camera);
+
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+
         mediaRecorder.setOrientationHint(90);
 
         mediaRecorder.setOutputFile(videoFile.getAbsolutePath());
         mediaRecorder.setPreviewDisplay(surfaceView.getHolder().getSurface());
 
+
         mediaRecorder.setMaxDuration(23000); // delayed for 1 sec because of SMTH!
+
         mediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
             @Override
             public void onInfo(MediaRecorder mr, int what, int extra) {
@@ -243,5 +291,6 @@ public class RecordActivity extends Activity {
             camera.lock();
         }
     }
+
 
 }

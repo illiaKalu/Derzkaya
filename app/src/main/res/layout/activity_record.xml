@@ -39,7 +39,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:layout_margin="45dp">
+        android:layout_margin="45dp"
+        android:weightSum="1">
 
         <ImageButton
             android:layout_width="52dp"
@@ -60,10 +61,12 @@
             android:layout_marginRight="25dp" />
 
         <ImageButton
-            android:layout_width="30dp"
-            android:layout_height="46dp"
+            android:layout_width="60dp"
+            android:layout_height="81dp"
             android:id="@+id/microphoneAction"
+            android:onClick="microphoneAction"
             android:background="@drawable/microphone_button_image"
-            android:layout_marginLeft="30dp" />
+            android:layout_marginLeft="30dp"
+            android:layout_weight="0.21" />
     </LinearLayout>
 </LinearLayout>
