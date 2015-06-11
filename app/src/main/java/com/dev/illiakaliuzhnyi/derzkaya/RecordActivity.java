@@ -239,7 +239,7 @@ public class RecordActivity extends Activity {
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
         mediaRecorder.setOrientationHint(90);
@@ -262,6 +262,8 @@ public class RecordActivity extends Activity {
 
                     mediaPlayer.stop();
                     mediaPlayer.release();
+
+
 
                     Intent startActivityResult = new Intent(RecordActivity.this, ResultActivity.class);
                     startActivity(startActivityResult);

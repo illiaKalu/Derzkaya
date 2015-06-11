@@ -59,6 +59,7 @@ public class Mp4ParserAudioMuxer {
 
         //https://github.com/sannies/mp4parser
         //https://github.com/sannies/mp4parser/issues/19
+        //https://github.com/tqnst/MP4ParserMergeAudioVideo/issues/1
 
        Movie audio;
         try {

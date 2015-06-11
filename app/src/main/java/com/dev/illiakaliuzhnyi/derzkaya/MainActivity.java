@@ -40,7 +40,14 @@ public class MainActivity extends Activity {
 
     public void mainActionButton(View view) {
 
+        // emulating it like a Record activity intenting result activity to avoid video overriding
+
         Intent startActivityRecord = new Intent(this, RecordActivity.class);
+
+
+        //Intent startActivityRecord = new Intent(this, ResultActivity.class);
+
+
         startActivity(startActivityRecord);
 
 
