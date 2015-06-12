@@ -67,7 +67,7 @@ public class RecordActivity extends Activity {
         File DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 
-        videoFile = new File(DCIMdir, "myvideo.mp4");
+        videoFile = new File(DCIMdir, "myvideo.3gp");
         surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
 
         SurfaceHolder holder = surfaceView.getHolder();
@@ -237,8 +237,8 @@ public class RecordActivity extends Activity {
         mediaRecorder.setCamera(camera);
 
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
         mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
@@ -248,7 +248,7 @@ public class RecordActivity extends Activity {
         mediaRecorder.setPreviewDisplay(surfaceView.getHolder().getSurface());
 
 
-        mediaRecorder.setMaxDuration(23000); // delayed for 1 sec because of SMTH!
+        mediaRecorder.setMaxDuration(23000); //
 
         mediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
             @Override

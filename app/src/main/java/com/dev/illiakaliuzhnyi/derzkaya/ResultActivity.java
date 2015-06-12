@@ -2,7 +2,9 @@ package com.dev.illiakaliuzhnyi.derzkaya;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Environment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -61,7 +63,7 @@ public class ResultActivity extends Activity {
 
 
         videoView = (VideoView) findViewById(R.id.videoView);
-        videoView.setVideoPath(DCIMdir + "/myvideo.mp4");
+        videoView.setVideoPath(DCIMdir + "/myvideo.3gp");
 
 
         videoView.setOnTouchListener(new View.OnTouchListener() {
@@ -91,7 +93,7 @@ public class ResultActivity extends Activity {
         Mp4ParserAudioMuxer mp4parser = new Mp4ParserAudioMuxer();
 
         String audioPath = "/storage/emulated/0/DCIM/derzkayaaac.aac";
-        String videoPath = "/storage/emulated/0/DCIM/myvideo.mp4";
+        String videoPath = "/storage/emulated/0/DCIM/myvideo.3gp";
 
         mp4parser.mux(videoPath, audioPath, DCIMdir + "/videowithsound.mp4");
 
@@ -129,6 +131,9 @@ public class ResultActivity extends Activity {
 
         // create a new music file ( mix audio record + derzkaya.wav)
         // add new music file to tape and save
+
+        videoView.setVideoPath(DCIMdir + "/output.mp4");
+
     }
 
     public void shareOnFacebook(View view) throws IOException {
@@ -140,11 +145,11 @@ public class ResultActivity extends Activity {
         File DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
         String audio = DCIMdir + "/" + "derzkaya1.m4a";
-        String video = DCIMdir + "/" + "myvideo.mp4";
-        String output = DCIMdir + "/" + "ouput.mp4";
+        String video = DCIMdir + "/" + "myvideo.3gp";
+        String output = DCIMdir + "/" + "ouput.3gp";
         Log.d("MY_TAG", "audio:" + audio + " video:" + video + " out:" + output);
 
-        new AddAudioToVideoAsyncTask(ResultActivity.this, audio).execute();
+        new AddAudioToVideoAsyncTask(audio).execute();
 
 
         //mux(video, audio, output);
@@ -188,8 +193,6 @@ public class ResultActivity extends Activity {
         Movie movie = new Movie();
         movie.addTrack(audioTrack);
         movie.addTrack(videoTrack);
-
-
 
 
         Container out = new DefaultMp4Builder().build(video);
@@ -244,6 +247,7 @@ public class ResultActivity extends Activity {
 
             byteBuffer.put(inputBuffer);
 
+
             return inputBytes;
         }
 
@@ -260,6 +264,7 @@ public class ResultActivity extends Activity {
         private void dumpToFile() {
             try {
                 outputStream.write(rawBuffer, 0, byteBuffer.position());
+                outputStream.flush();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

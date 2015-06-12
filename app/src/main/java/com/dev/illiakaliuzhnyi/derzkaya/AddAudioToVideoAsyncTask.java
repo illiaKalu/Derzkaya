@@ -6,6 +6,7 @@ package com.dev.illiakaliuzhnyi.derzkaya;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
@@ -21,11 +22,9 @@ import java.io.File;
 
 public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
 
-    Activity act;
-    String audio;
-    double position;
+
+    int framesnumber = 0;
     String videoFromFilePath;
-    boolean hasAudio;
     String videoToFilePath;
     double frameRate;
 
@@ -33,19 +32,16 @@ public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
     FFmpegFrameGrabber grabberFirst;
     FFmpegFrameGrabber grabberSecond;
 
-    public AddAudioToVideoAsyncTask(Activity act, String audioName){
-        audio = audioName;
-        position = 0.0; //positionToAdd;
+    public AddAudioToVideoAsyncTask(String audioName){
+
+
 
         Log.d("MY", "WORKING FINE ON THE BEGINNING!");
-
-        // !
-        hasAudio = true;
 
         File workingFile = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 
-        videoFromFilePath = workingFile + "/myvideo.mp4";
+        videoFromFilePath = workingFile + "/myvideo.3gp";
         videoToFilePath = workingFile + "/output.mp4";
 
         Log.d("MY_TAG", "result video - " + videoToFilePath);
@@ -59,7 +55,6 @@ public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
     protected void onPreExecute() {
         super.onPreExecute();
 
-        Log.d("MY", "ON THE PRE EXECUTE METHOD");
 
         try {
             grabberFirst.start();
@@ -73,24 +68,14 @@ public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
         }
 
         Log.d("MY", "STILL ALIVE AFTER GRABBERFIRST.START");
+
+
         frameRate = grabberFirst.getFrameRate();
         recorder = new FFmpegFrameRecorder(videoToFilePath, grabberFirst.getImageWidth(), grabberFirst.getImageHeight(), grabberSecond.getAudioChannels());
 
-        recorder.setFrameRate(frameRate);
-        recorder.setFormat(grabberFirst.getFormat());
-        recorder.setSampleRate(grabberFirst.getSampleRate());
 
-
-        recorder.setAudioChannels(2);
-
-        recorder.setVideoCodec(86018);
-
-        //CHECK AVAILABLE CODECS!
-
-        Log.d("MY", "number of audio channels = " + grabberSecond.getAudioChannels());
-
-        Log.d("MY", "video codec = " + String.valueOf(grabberFirst.getVideoCodec()));
-        Log.d("MY", "audio codec = " + String.valueOf(grabberFirst.getAudioCodec()));
+        recorder.setFrameRate(10);
+        Log.d("MY", "FrameRate - " + grabberFirst.getFrameRate());
 
         try {
             recorder.start();
@@ -127,15 +112,25 @@ public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
         try {
             while ((frame1 = grabberFirst.grabFrame()) != null ||
                     (frame2 = grabberSecond.grabFrame()) != null) {
+
+
                 recorder.record(frame1);
                 recorder.record(frame2);
+                framesnumber++;
+
             }
+
+            recorder.stop();
+            grabberSecond.stop();
+            grabberFirst.stop();
+
         } catch (FrameGrabber.Exception fge) {
             fge.printStackTrace();
         } catch (FrameRecorder.Exception fre) {
             fre.printStackTrace();
         }
 
+        Log.d("MY", "I am done with merging and frames are - " + framesnumber);
 
         return null;
     }
