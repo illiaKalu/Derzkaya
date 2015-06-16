@@ -4,10 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
-import android.media.AudioFormat;
 import android.media.AudioManager;
-import android.media.AudioRecord;
-import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -15,7 +12,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -26,11 +22,9 @@ import android.widget.Chronometer;
 
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 
 import java.io.File;
-import java.io.IOException;
 
 
 public class RecordActivity extends Activity {
@@ -46,6 +40,8 @@ public class RecordActivity extends Activity {
     MediaPlayer mediaPlayer;
     File videoFile;
     ImageButton microphone_button;
+    ImageButton recordButton;
+    ImageButton backToMain;
     AudioManager audioManager;
 
 
@@ -59,10 +55,14 @@ public class RecordActivity extends Activity {
         audioManager = (AudioManager) getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
         audioManager.setMode(AudioManager.MODE_IN_CALL);
 
+        audioManager.setMicrophoneMute(true);
 
+        recordButton = (ImageButton) findViewById(R.id.record_button);
+        backToMain = (ImageButton) findViewById(R.id.back_to_main);
 
         // !!
         mediaPlayer = MediaPlayer.create(RecordActivity.this, R.raw.derzkaya);
+
 
         File DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -76,10 +76,11 @@ public class RecordActivity extends Activity {
             public void surfaceCreated(SurfaceHolder holder) {
 
                 progressThread = new Thread(new Runnable() {
+
                     int mProgressStatus = 0;
                     public void run() {
-                        while (mProgressStatus < 24) {
-                            android.os.SystemClock.sleep(1000); // Thread.sleep() doesn't guarantee 1000 msec sleep, it can be interrupted before
+                        while (true) {
+                            android.os.SystemClock.sleep(50); // Thread.sleep() doesn't guarantee 50 msec sleep, it can be interrupted before! 1000 / 50 = 20; 20 * 23 = 460 (!) - max progress bar size
                             // Update the progress bar
                             mHandler.post(new Runnable() {
                                 public void run() {
@@ -99,10 +100,12 @@ public class RecordActivity extends Activity {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
 
+                        microphone_button.setBackground(getDrawable(R.drawable.micro_on));
+
                         if (event.getAction() == MotionEvent.ACTION_DOWN) {
                             Log.d("MY_TAG", "LOL i am pressed");
 
-                            audioManager.setMicrophoneMute(true);
+                            audioManager.setMicrophoneMute(false);
 
                             mediaPlayer.setVolume(0, 0);
 
@@ -110,7 +113,9 @@ public class RecordActivity extends Activity {
                         } else if (event.getAction() == MotionEvent.ACTION_UP) {
                             Log.d("MY_TAG", "LOL i am released");
 
-                            audioManager.setMicrophoneMute(false);
+                            microphone_button.setBackground(getDrawable(R.drawable.micro_off));
+
+                            audioManager.setMicrophoneMute(true);
 
                             mediaPlayer.setVolume(1, 1);
 
@@ -120,6 +125,29 @@ public class RecordActivity extends Activity {
                     }
                 });
 
+                recordButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startRecord(v);
+                    }
+                });
+
+                backToMain.setOnTouchListener(new View.OnTouchListener() {
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+
+
+                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                            backToMain.setBackground(getDrawable(R.drawable.back_off));
+                        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                            backToMain.setBackground(getDrawable(R.drawable.back_on));
+                            onBackPressed();
+                        }
+
+
+                        return true;
+                    }
+                });
 
                 try {
 
@@ -185,11 +213,16 @@ public class RecordActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void backToMainActivity(View view) {
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.pull_in_right, R.anim.push_out_left);
         finish();
     }
 
-    public void startRecord(View view) {
+     private void startRecord(View view) {
+
+        recordButton.setBackground(getDrawable(R.drawable.stop));
 
         if(isRecording) {
 
@@ -203,12 +236,12 @@ public class RecordActivity extends Activity {
                 releaseMediaRecorder();
             }
 
-            Intent startActivityResult = new Intent(this, ResultActivity.class);
-            startActivity(startActivityResult);
+            Intent intent = new Intent(this, ResultActivity.class);
+            startActivity(intent);
+            overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
+
             finish();
         }else{
-
-
 
             if (prepareVideoRecorder()) {
                 mediaRecorder.start();
@@ -265,8 +298,9 @@ public class RecordActivity extends Activity {
 
 
 
-                    Intent startActivityResult = new Intent(RecordActivity.this, ResultActivity.class);
-                    startActivity(startActivityResult);
+                    Intent intent = new Intent(RecordActivity.this, ResultActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
 
 
                     finish();

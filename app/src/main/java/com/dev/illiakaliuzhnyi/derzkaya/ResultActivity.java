@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.MediaController;
 import android.widget.VideoView;
 
@@ -51,12 +52,49 @@ public class ResultActivity extends Activity {
     
     AudioManager audioManager;
 
+    ImageButton save_button;
+
+    ImageButton backToMain;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
+        save_button = (ImageButton) findViewById(R.id.save_button);
+
+        save_button.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    save_button.setBackground(getDrawable(R.drawable.save_off));
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    save_button.setBackground(getDrawable(R.drawable.save_on));
+                    // Do save actions
+                }
+
+                return true;
+            }
+        });
+        backToMain = (ImageButton) findViewById(R.id.back_to_main_button);
+
+        backToMain.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    backToMain.setBackground(getDrawable(R.drawable.back_off));
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    backToMain.setBackground(getDrawable(R.drawable.back_on));
+                    onBackPressed();
+                }
+
+                return true;
+            }
+        });
 
         DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -87,23 +125,13 @@ public class ResultActivity extends Activity {
 
     }
 
-    private void mergeVideoAndAudio() throws IOException {
-
-        Log.d("My_TAG", "START MUX");
-        Mp4ParserAudioMuxer mp4parser = new Mp4ParserAudioMuxer();
-
-        String audioPath = "/storage/emulated/0/DCIM/derzkayaaac.aac";
-        String videoPath = "/storage/emulated/0/DCIM/myvideo.3gp";
-
-        mp4parser.mux(videoPath, audioPath, DCIMdir + "/videowithsound.mp4");
-
-        Log.d("My_TAG", audioPath + " - working with this audio");
-        Log.d("My_TAG", videoPath + " - working with this video");
-        Log.d("My_TAG", DCIMdir + "/videowithsound.mp4" + "   - Directory of output");
-
-        Log.d("My_TAG", "I AM DONE");
-
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.pull_in_right, R.anim.push_out_left);
+        finish();
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -127,15 +155,6 @@ public class ResultActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void saveResult(View view) {
-
-        // create a new music file ( mix audio record + derzkaya.wav)
-        // add new music file to tape and save
-
-        videoView.setVideoPath(DCIMdir + "/output.mp4");
-
-    }
-
     public void shareOnFacebook(View view) throws IOException {
 
         // share on facebook button realization
@@ -144,16 +163,34 @@ public class ResultActivity extends Activity {
 
         File DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-        String audio = DCIMdir + "/" + "derzkaya1.m4a";
+        String audiom4a = DCIMdir + "/" + "derzkaya1.m4a";
         String video = DCIMdir + "/" + "myvideo.3gp";
-        String output = DCIMdir + "/" + "ouput.3gp";
-        Log.d("MY_TAG", "audio:" + audio + " video:" + video + " out:" + output);
-
-        new AddAudioToVideoAsyncTask(audio).execute();
+        String output3gp = DCIMdir + "/" + "ouput.3gp";
 
 
-        //mux(video, audio, output);
 
+        new AddAudioToVideoAsyncTask(audiom4a).execute();
+
+        //mergeVideoAndAudio();
+
+
+    }
+
+    private void mergeVideoAndAudio() throws IOException {
+
+        Log.d("My_TAG", "START MUX");
+        Mp4ParserAudioMuxer mp4parser = new Mp4ParserAudioMuxer();
+
+        String audioPath = "/storage/emulated/0/DCIM/derzkayaaac.aac";
+        String videoPath = "/storage/emulated/0/DCIM/myvideo.3gp";
+
+        mp4parser.mux(videoPath, audioPath, DCIMdir + "/videowithsound.mp4");
+
+        Log.d("My_TAG", audioPath + " - working with this audio");
+        Log.d("My_TAG", videoPath + " - working with this video");
+        Log.d("My_TAG", DCIMdir + "/videowithsound.mp4" + "   - Directory of output");
+
+        Log.d("My_TAG", "I AM DONE");
 
     }
 

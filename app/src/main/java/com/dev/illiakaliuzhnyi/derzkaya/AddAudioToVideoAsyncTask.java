@@ -18,6 +18,7 @@ import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
 
 import java.io.File;
+import java.io.IOException;
 
 
 public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
@@ -33,8 +34,6 @@ public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
     FFmpegFrameGrabber grabberSecond;
 
     public AddAudioToVideoAsyncTask(String audioName){
-
-
 
         Log.d("MY", "WORKING FINE ON THE BEGINNING!");
 
@@ -119,6 +118,7 @@ public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
                 framesnumber++;
 
             }
+
 
             recorder.stop();
             grabberSecond.stop();
