@@ -3,6 +3,8 @@ package com.dev.illiakaliuzhnyi.derzkaya;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Environment;
@@ -86,8 +88,7 @@ public class ResultActivity extends Activity {
         DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 
-        File file = new File(DCIMdir + "/myvideo.3gp");
-        videoFileUri = Uri.fromFile(file);
+        videoFileUri = Uri.parse(DCIMdir + "/myvideo.3gp");
 
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
@@ -242,21 +243,36 @@ public class ResultActivity extends Activity {
         //mergeVideoAndAudio();
     */
 
-        if (ShareDialog.canShow(ShareVideoContent.class)) {
-            ShareVideo video = new ShareVideo.Builder()
-                    .setLocalUrl(videoFileUri)
-                    .build();
+        if(checkFacebookAppAvailability()){
 
-            ShareVideoContent content = new ShareVideoContent.Builder()
-                    .setVideo(video)
-                    .build();
 
-            shareDialog.show(content);
+            if (ShareDialog.canShow(ShareVideoContent.class)) {
+                ShareVideo video = new ShareVideo.Builder()
+                        .setLocalUrl(videoFileUri)
+                        .build();
+
+                ShareVideoContent content = new ShareVideoContent.Builder()
+                        .setVideo(video)
+                        .build();
+
+                shareDialog.show(content);
+            }
+
+        }else{
+            Toast.makeText(ResultActivity.this, "whooops! Looks like you haven't facebook app.", Toast.LENGTH_SHORT).show();
+
         }
+    }
 
-        Toast.makeText(ResultActivity.this, "Video shared", Toast.LENGTH_SHORT).show();
+    private boolean checkFacebookAppAvailability() {
 
-
+        try{
+            ApplicationInfo info = getPackageManager().
+                    getApplicationInfo("com.facebook.katana", 0 );
+            return true;
+        } catch( PackageManager.NameNotFoundException e ){
+            return false;
+        }
     }
 
     private void moveFile(String inputFile, File outputPath, String outputFileName) {
