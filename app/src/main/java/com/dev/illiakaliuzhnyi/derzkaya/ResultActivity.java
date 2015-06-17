@@ -15,6 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.MediaController;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.coremedia.iso.boxes.Container;
@@ -44,14 +45,18 @@ import com.googlecode.mp4parser.authoring.tracks.TextTrackImpl;
 
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
-
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class ResultActivity extends Activity {
@@ -118,6 +123,16 @@ public class ResultActivity extends Activity {
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     save_button.setBackground(getDrawable(R.drawable.save_on));
                     // Do save actions
+
+                    //File moviesDir = Environment
+                      //      .getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES); where do I need to store video?
+
+
+                    DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss");
+                    String date = dateFormat.format(new Date());
+                    String outputFileName = "/DerzkayaVID_" + date + ".3gp";
+                    Log.d("MY TAG", "DATE IS - " + date);
+                    moveFile(DCIMdir + "/myvideo.3gp", DCIMdir, outputFileName);
                 }
 
                 return true;
@@ -239,7 +254,42 @@ public class ResultActivity extends Activity {
             shareDialog.show(content);
         }
 
+        Toast.makeText(ResultActivity.this, "Video shared", Toast.LENGTH_SHORT).show();
 
+
+    }
+
+    private void moveFile(String inputFile, File outputPath, String outputFileName) {
+
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+
+            in = new FileInputStream(inputFile);
+            out = new FileOutputStream(outputPath + "/Camera" + outputFileName);
+
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            in.close();
+            in = null;
+
+            // write the output file
+            out.flush();
+            out.close();
+            out = null;
+
+            // delete the original file
+            //new File(inputPath + inputFile).delete();
+
+            Toast.makeText(ResultActivity.this, "Video saved", Toast.LENGTH_SHORT).show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void mergeVideoAndAudio() throws IOException {
