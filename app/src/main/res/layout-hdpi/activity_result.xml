@@ -1,6 +1,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="fill_parent"
     tools:context="com.dev.illiakaliuzhnyi.derzkaya.ResultActivity"
     android:background="@drawable/xhdpi_background"
     android:orientation="vertical"
@@ -16,12 +16,11 @@
             android:layout_gravity="top|center_horizontal" />
 
         <VideoView
-            android:layout_width="248dp"
-            android:layout_height="235dp"
+            android:layout_width="239dp"
+            android:layout_height="189dp"
             android:id="@+id/videoView"
             android:layout_gravity="center_horizontal"
-            android:clickable="true"
-            android:layout_marginTop="5dp" />
+            android:clickable="true" />
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -29,8 +28,8 @@
             android:text="Save"
             android:id="@+id/save_button"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="5dp"
-            android:background="@drawable/save_on" />
+            android:background="@drawable/save_off"
+            android:layout_marginTop="5dp" />
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -39,17 +38,16 @@
             android:background="@drawable/f_on"
             android:onClick="shareOnFacebook"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="5dp"
-            android:src="@drawable/f_on" />
+            android:layout_marginTop="5dp" />
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/back_to_main_button"
             android:focusableInTouchMode="true"
-            android:background="@drawable/back_on"
-            android:layout_marginTop="5dp"
             android:layout_marginLeft="45dp"
-            android:layout_gravity="left" />
+            android:layout_gravity="left"
+            android:background="@drawable/back_on" />
+
 
 </LinearLayout>
