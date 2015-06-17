@@ -18,6 +18,16 @@ import android.widget.MediaController;
 import android.widget.VideoView;
 
 import com.coremedia.iso.boxes.Container;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookDialog;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.share.Sharer;
+import com.facebook.share.model.ShareVideo;
+import com.facebook.share.model.ShareVideoContent;
+import com.facebook.share.widget.ShareDialog;
 import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
@@ -49,6 +59,8 @@ public class ResultActivity extends Activity {
     VideoView videoView;
 
     File DCIMdir;
+
+    Uri videoFileUri;
     
     AudioManager audioManager;
 
@@ -56,11 +68,44 @@ public class ResultActivity extends Activity {
 
     ImageButton backToMain;
 
+    CallbackManager callbackManager;
+    ShareDialog shareDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
+
+
+        DCIMdir = Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
+
+        File file = new File(DCIMdir + "/myvideo.3gp");
+        videoFileUri = Uri.fromFile(file);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        callbackManager = CallbackManager.Factory.create();
+        shareDialog = new ShareDialog(this);
+        // this part is optional
+        shareDialog.registerCallback(callbackManager, new FacebookCallback<Sharer.Result>() {
+
+            @Override
+            public void onSuccess(Sharer.Result result) {
+
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+
+            @Override
+            public void onError(FacebookException e) {
+
+            }
+        });
+
 
         save_button = (ImageButton) findViewById(R.id.save_button);
 
@@ -96,9 +141,6 @@ public class ResultActivity extends Activity {
             }
         });
 
-        DCIMdir = Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-
 
         videoView = (VideoView) findViewById(R.id.videoView);
         videoView.setVideoPath(DCIMdir + "/myvideo.3gp");
@@ -132,6 +174,17 @@ public class ResultActivity extends Activity {
         finish();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        AppEventsLogger.activateApp(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AppEventsLogger.deactivateApp(this);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -161,7 +214,7 @@ public class ResultActivity extends Activity {
 
         // TEMPORARY!
 
-        File DCIMdir = Environment
+   /*     File DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
         String audiom4a = DCIMdir + "/" + "derzkaya1.m4a";
         String video = DCIMdir + "/" + "myvideo.3gp";
@@ -172,6 +225,19 @@ public class ResultActivity extends Activity {
         new AddAudioToVideoAsyncTask(audiom4a).execute();
 
         //mergeVideoAndAudio();
+    */
+
+        if (ShareDialog.canShow(ShareVideoContent.class)) {
+            ShareVideo video = new ShareVideo.Builder()
+                    .setLocalUrl(videoFileUri)
+                    .build();
+
+            ShareVideoContent content = new ShareVideoContent.Builder()
+                    .setVideo(video)
+                    .build();
+
+            shareDialog.show(content);
+        }
 
 
     }
