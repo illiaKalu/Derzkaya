@@ -14,14 +14,23 @@
             android:id="@+id/imageView2"
             android:background="@drawable/logo_mini"
             android:layout_gravity="top|center_horizontal" />
-
+<RelativeLayout
+    android:layout_width="313dp"
+    android:layout_height="134dp"
+    android:gravity="center"
+    android:layout_weight="0.45">
         <VideoView
-            android:layout_width="248dp"
-            android:layout_height="235dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true"
             android:id="@+id/videoView"
             android:layout_gravity="center_horizontal"
             android:clickable="true"
-            android:layout_marginTop="5dp" />
+            android:layout_alignParentTop="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+</RelativeLayout>
 
         <ImageButton
             android:layout_width="wrap_content"

@@ -27,7 +27,6 @@ public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
     int framesnumber = 0;
     String videoFromFilePath;
     String videoToFilePath;
-    double frameRate;
 
     FFmpegFrameRecorder recorder;
     FFmpegFrameGrabber grabberFirst;
@@ -69,11 +68,15 @@ public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
         Log.d("MY", "STILL ALIVE AFTER GRABBERFIRST.START");
 
 
-        frameRate = grabberFirst.getFrameRate();
+        //frameRate = grabberFirst.getFrameRate();
         recorder = new FFmpegFrameRecorder(videoToFilePath, grabberFirst.getImageWidth(), grabberFirst.getImageHeight(), grabberSecond.getAudioChannels());
 
+       // recorder.setVideoCodec(grabberFirst.getVideoCodec());
+       // recorder.setFrameRate(grabberFirst.getFrameRate());
+       // recorder.setSampleRate(grabberSecond.getSampleRate());
+       // recorder.setFormat("mp4");
 
-        recorder.setFrameRate(10);
+
         Log.d("MY", "FrameRate - " + grabberFirst.getFrameRate());
 
         try {
@@ -109,15 +112,22 @@ public class AddAudioToVideoAsyncTask extends AsyncTask<Void, Void, Void> {
         Frame frame2 = null;
 
         try {
-            while ((frame1 = grabberFirst.grabFrame()) != null ||
-                    (frame2 = grabberSecond.grabFrame()) != null) {
 
+            while(true)
+            {
+
+                frame1 = grabberFirst.grabFrame();
+                frame2 = grabberSecond.grabFrame();
+
+                if(frame1 == null || frame2 == null) break;
+
+                frame1.samples = frame2.samples;
 
                 recorder.record(frame1);
-                recorder.record(frame2);
-                framesnumber++;
+
 
             }
+
 
 
             recorder.stop();

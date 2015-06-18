@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.hardware.Camera;
 import android.media.AudioManager;
+import android.media.CamcorderProfile;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -63,6 +64,79 @@ public class RecordActivity extends Activity {
         // !!
         mediaPlayer = MediaPlayer.create(RecordActivity.this, R.raw.derzkaya);
 
+        progressThread = new Thread(new Runnable() {
+
+            int mProgressStatus = 0;
+            public void run() {
+                while (true) {
+                    android.os.SystemClock.sleep(50); // Thread.sleep() doesn't guarantee 50 msec sleep, it can be interrupted before! 1000 / 50 = 20; 20 * 23 = 460 (!) - max progress bar size
+                    // Update the progress bar
+                    mHandler.post(new Runnable() {
+                        public void run() {
+                            mProgress.setProgress(mProgressStatus);
+                        }
+                    });
+                    mProgressStatus ++;
+                }
+            }
+        });
+
+        microphone_button = (ImageButton) findViewById(R.id.microphoneAction);
+
+        microphone_button.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+                microphone_button.setBackground(getResources().getDrawable(R.drawable.micro_on));
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    Log.d("MY_TAG", "LOL i am pressed");
+
+                    audioManager.setMicrophoneMute(false);
+
+                    mediaPlayer.setVolume(0, 0);
+
+
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    Log.d("MY_TAG", "LOL i am released");
+
+                    microphone_button.setBackground(getResources().getDrawable(R.drawable.micro_off));
+
+                    audioManager.setMicrophoneMute(true);
+
+                    mediaPlayer.setVolume(1, 1);
+
+                }
+
+                return true;
+            }
+        });
+
+        recordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startRecord(v);
+            }
+        });
+
+        backToMain.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+
+
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    backToMain.setBackground(getResources().getDrawable(R.drawable.back_off));
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    backToMain.setBackground(getResources().getDrawable(R.drawable.back_on));
+                    onBackPressed();
+                }
+
+
+                return true;
+            }
+        });
 
         File DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
@@ -75,88 +149,18 @@ public class RecordActivity extends Activity {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
 
-                progressThread = new Thread(new Runnable() {
-
-                    int mProgressStatus = 0;
-                    public void run() {
-                        while (true) {
-                            android.os.SystemClock.sleep(50); // Thread.sleep() doesn't guarantee 50 msec sleep, it can be interrupted before! 1000 / 50 = 20; 20 * 23 = 460 (!) - max progress bar size
-                            // Update the progress bar
-                            mHandler.post(new Runnable() {
-                                public void run() {
-                                    mProgress.setProgress(mProgressStatus);
-                                }
-                            });
-                            mProgressStatus ++;
-                        }
-                    }
-                });
-
-                //camera.setDisplayOrientation(90);
-
-                microphone_button = (ImageButton) findViewById(R.id.microphoneAction);
-
-                microphone_button.setOnTouchListener(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-
-                        microphone_button.setBackground(getDrawable(R.drawable.micro_on));
-
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            Log.d("MY_TAG", "LOL i am pressed");
-
-                            audioManager.setMicrophoneMute(false);
-
-                            mediaPlayer.setVolume(0, 0);
-
-
-                        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                            Log.d("MY_TAG", "LOL i am released");
-
-                            microphone_button.setBackground(getDrawable(R.drawable.micro_off));
-
-                            audioManager.setMicrophoneMute(true);
-
-                            mediaPlayer.setVolume(1, 1);
-
-                        }
-
-                        return true;
-                    }
-                });
-
-                recordButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        startRecord(v);
-                    }
-                });
-
-                backToMain.setOnTouchListener(new View.OnTouchListener() {
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-
-
-                        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                            backToMain.setBackground(getDrawable(R.drawable.back_off));
-                        } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                            backToMain.setBackground(getDrawable(R.drawable.back_on));
-                            onBackPressed();
-                        }
-
-
-                        return true;
-                    }
-                });
-
                 try {
-
+                    camera.setDisplayOrientation(90);
                     camera.setPreviewDisplay(holder);
                     camera.startPreview();
-                    camera.setDisplayOrientation(90);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                //camera.setDisplayOrientation(90);
+
+
             }
 
 
@@ -222,14 +226,14 @@ public class RecordActivity extends Activity {
 
      private void startRecord(View view) {
 
-        recordButton.setBackground(getDrawable(R.drawable.stop));
+        recordButton.setBackground(getResources().getDrawable(R.drawable.stop));
 
         if(isRecording) {
 
             mediaPlayer.stop();
             mediaPlayer.release();
             chronometer.stop();
-            //progressThread.destroy();
+//            progressThread.destroy();
 
             if (mediaRecorder != null) {
                 mediaRecorder.stop();
@@ -241,11 +245,12 @@ public class RecordActivity extends Activity {
             overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
 
             finish();
+
         }else{
 
             if (prepareVideoRecorder()) {
                 mediaRecorder.start();
-            } else {
+            }else{
                 releaseMediaRecorder();
             }
 
@@ -258,9 +263,7 @@ public class RecordActivity extends Activity {
             isRecording = true;
         }
 
-
-
-    }
+  }
     private boolean prepareVideoRecorder() {
 
         camera.unlock();
@@ -269,19 +272,25 @@ public class RecordActivity extends Activity {
 
         mediaRecorder.setCamera(camera);
 
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
-        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        //mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+        //mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+        //mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        //mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        //mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
+
+        //mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+
+        mediaRecorder.setProfile(CamcorderProfile
+                .get(CamcorderProfile.QUALITY_TIME_LAPSE_480P));
         mediaRecorder.setOrientationHint(90);
 
         mediaRecorder.setOutputFile(videoFile.getAbsolutePath());
         mediaRecorder.setPreviewDisplay(surfaceView.getHolder().getSurface());
 
 
-        mediaRecorder.setMaxDuration(23000); //
+        mediaRecorder.setMaxDuration(23000);
 
         mediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
             @Override

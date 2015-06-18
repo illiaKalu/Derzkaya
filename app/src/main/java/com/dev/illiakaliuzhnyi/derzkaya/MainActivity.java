@@ -1,9 +1,10 @@
 package com.dev.illiakaliuzhnyi.derzkaya;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -25,14 +26,16 @@ public class MainActivity extends Activity {
         toRecordActivityButton = (Button) findViewById(R.id.to_recordActivity_button);
 
         toRecordActivityButton.setOnTouchListener(new View.OnTouchListener() {
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    toRecordActivityButton.setBackground(getDrawable(R.drawable.record_));
+                    toRecordActivityButton.setBackground(getResources().getDrawable(R.drawable.record_));
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    toRecordActivityButton.setBackground(getDrawable(R.drawable.record));
+                    toRecordActivityButton.setBackground(getResources().getDrawable(R.drawable.record));
                     Intent intent = new Intent(MainActivity.this, RecordActivity.class);
+                    Intent intent2 = new Intent(MainActivity.this, ResultActivity.class);
                     startActivity(intent);
                     overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
                 }

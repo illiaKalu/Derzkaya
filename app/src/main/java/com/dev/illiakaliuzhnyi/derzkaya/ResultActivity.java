@@ -68,8 +68,6 @@ public class ResultActivity extends Activity {
     File DCIMdir;
 
     Uri videoFileUri;
-    
-    AudioManager audioManager;
 
     ImageButton save_button;
 
@@ -88,11 +86,12 @@ public class ResultActivity extends Activity {
         DCIMdir = Environment
                 .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
 
-        videoFileUri = Uri.parse(DCIMdir + "/myvideo.3gp");
+        final File f = new File(DCIMdir + "/myvideo.3gp");
+        videoFileUri = Uri.fromFile(f);
 
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
-        shareDialog = new ShareDialog(this);
+        shareDialog = new ShareDialog(ResultActivity.this);
         // this part is optional
         shareDialog.registerCallback(callbackManager, new FacebookCallback<Sharer.Result>() {
 
@@ -120,11 +119,12 @@ public class ResultActivity extends Activity {
             public boolean onTouch(View v, MotionEvent event) {
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    save_button.setBackground(getDrawable(R.drawable.save_off));
+                    save_button.setBackground(getResources().getDrawable(R.drawable.save_off));
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    save_button.setBackground(getDrawable(R.drawable.save_on));
+                    save_button.setBackground(getResources().getDrawable(R.drawable.save_on));
                     // Do save actions
 
+                    save_button.setEnabled(false);
                     //File moviesDir = Environment
                       //      .getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES); where do I need to store video?
 
@@ -147,9 +147,9 @@ public class ResultActivity extends Activity {
 
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    backToMain.setBackground(getDrawable(R.drawable.back_off));
+                    backToMain.setBackground(getResources().getDrawable(R.drawable.back_off));
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    backToMain.setBackground(getDrawable(R.drawable.back_on));
+                    backToMain.setBackground(getResources().getDrawable(R.drawable.back_on));
                     onBackPressed();
                 }
 
@@ -166,16 +166,19 @@ public class ResultActivity extends Activity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                if (!videoView.isPlaying()) {
-
+                if(!videoView.isPlaying()) {
+                    Log.d("MY", "touched!");
                     videoView.start();
 
-                } else {
 
-                    videoView.pause();
+                }else {
+                    if(videoView.isPlaying()){
+                        Log.d("MY", "touched again!");
+                        videoView.pause();
+
+                    }
 
                 }
-
 
                 return false;
             }
@@ -230,38 +233,37 @@ public class ResultActivity extends Activity {
 
         // TEMPORARY!
 
-   /*     File DCIMdir = Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
         String audiom4a = DCIMdir + "/" + "derzkaya1.m4a";
-        String video = DCIMdir + "/" + "myvideo.3gp";
-        String output3gp = DCIMdir + "/" + "ouput.3gp";
 
 
 
         new AddAudioToVideoAsyncTask(audiom4a).execute();
 
         //mergeVideoAndAudio();
-    */
-
-        if(checkFacebookAppAvailability()){
 
 
-            if (ShareDialog.canShow(ShareVideoContent.class)) {
-                ShareVideo video = new ShareVideo.Builder()
-                        .setLocalUrl(videoFileUri)
-                        .build();
-
-                ShareVideoContent content = new ShareVideoContent.Builder()
-                        .setVideo(video)
-                        .build();
-
-                shareDialog.show(content);
-            }
-
-        }else{
-            Toast.makeText(ResultActivity.this, "whooops! Looks like you haven't facebook app.", Toast.LENGTH_SHORT).show();
-
-        }
+//        if(checkFacebookAppAvailability()){
+//
+//
+//            if (ShareDialog.canShow(ShareVideoContent.class)) {
+//                ShareVideo video = new ShareVideo.Builder()
+//                        .setLocalUrl(videoFileUri)
+//                        .build();
+//
+//
+//
+//                ShareVideoContent content = new ShareVideoContent.Builder()
+//                        .setVideo(video)
+//                        .build();
+//
+//
+//                shareDialog.show(content);
+//            }
+//
+//        }else{
+//            Toast.makeText(ResultActivity.this, "whooops! Looks like you haven't facebook app.", Toast.LENGTH_SHORT).show();
+//
+//        }
     }
 
     private boolean checkFacebookAppAvailability() {
