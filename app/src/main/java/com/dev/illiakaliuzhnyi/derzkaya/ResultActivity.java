@@ -68,8 +68,6 @@ public class ResultActivity extends Activity {
     File DCIMdir;
 
     Uri videoFileUri;
-    
-    AudioManager audioManager;
 
     ImageButton save_button;
 
