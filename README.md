@@ -6,7 +6,7 @@ what I need : <br>
 
 June 11. I still need todo :
 1) merge video and sound correctly ( mute stuff when needed)
-2) optimize code ( find elements properly, add more detailed comments, NPE check)
-3) design (!)
-4) came up with save logic
-5) share on facebook
+
+Useful links and stuff: 
+1) http://trac.ffmpeg.org/wiki/Concatenate - audio concat
+2) compile 'com.github.hiteshsondhi88.libffmpeg:FFmpegAndroid:0.2.5' - Gradle add FFMpeg
