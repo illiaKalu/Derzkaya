@@ -9,24 +9,20 @@
 
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="154dp"
+            android:layout_height="154dp"
             android:id="@+id/imageView2"
             android:background="@drawable/logo_mini"
-            android:layout_gravity="top|center_horizontal"
-            android:layout_marginBottom="15dp" />
-    <RelativeLayout
-        android:layout_width="313dp"
-        android:layout_height="154dp"
-        android:gravity="center"
-        android:layout_weight="0.45">
+            android:layout_gravity="top|center_horizontal" />
+
         <VideoView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="343dp"
+            android:layout_height="189dp"
             android:id="@+id/videoView"
             android:layout_gravity="center_horizontal"
-            android:clickable="true" />
-    </RelativeLayout>
+            android:clickable="true"
+            android:layout_weight="0.57"
+            android:layout_marginTop="10dp" />
 
         <ImageButton
             android:layout_width="wrap_content"
@@ -44,14 +40,14 @@
             android:background="@drawable/f_on"
             android:onClick="shareOnFacebook"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="5dp" />
+            android:layout_marginTop="15dp" />
 
         <ImageButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/back_to_main_button"
             android:focusableInTouchMode="true"
-            android:layout_marginLeft="45dp"
+            android:layout_marginLeft="55dp"
             android:layout_gravity="left"
             android:background="@drawable/back_on" />
 

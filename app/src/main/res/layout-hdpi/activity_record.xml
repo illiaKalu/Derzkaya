@@ -65,8 +65,7 @@
                 android:background="@drawable/rec"
                 android:layout_marginRight="40dp"
                 android:layout_marginLeft="40dp"
-                android:nestedScrollingEnabled="false"
-                android:src="@drawable/rec" />
+                android:nestedScrollingEnabled="false" />
 
             <ImageButton
                 android:layout_width="wrap_content"

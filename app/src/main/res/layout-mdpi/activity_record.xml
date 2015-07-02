@@ -40,7 +40,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/surfaceView"
-            android:layout_weight="0.5" />
+            android:layout_weight="0.5"
+            android:longClickable="false" />
 
         <LinearLayout
             android:orientation="horizontal"
@@ -54,16 +55,17 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/back_to_main"
                 android:focusableInTouchMode="true"
-                android:background="@drawable/back_on" />
+                android:background="@drawable/back_on"
+                android:src="@drawable/back_on" />
 
             <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="89dp"
+                android:layout_height="89dp"
                 android:id="@+id/record_button"
-                android:background="@drawable/rec"
-                android:layout_marginRight="65dp"
-                android:layout_marginLeft="65dp"
-                android:nestedScrollingEnabled="false" />
+                android:layout_marginRight="40dp"
+                android:layout_marginLeft="40dp"
+                android:nestedScrollingEnabled="false"
+                android:background="@drawable/rec" />
 
             <ImageButton
                 android:layout_width="wrap_content"
