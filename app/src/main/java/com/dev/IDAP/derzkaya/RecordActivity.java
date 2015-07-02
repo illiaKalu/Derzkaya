@@ -49,8 +49,12 @@ public class RecordActivity extends Activity {
     ImageButton recordButton;
     ImageButton backToMain;
 
+
+
+
     // names of the resourses must be lower case !
     String recorderedVoice = MainActivity.baseExternalDirectory.getAbsolutePath() + "/recorderedvoice.wav";
+    String capturedVideo = "capturedvideo.3gp";
 
     String MY_LOG_TAG = "MY";
 
@@ -74,6 +78,8 @@ public class RecordActivity extends Activity {
 
         recordButton = (ImageButton) findViewById(R.id.record_button);
         backToMain = (ImageButton) findViewById(R.id.back_to_main);
+        chronometer = (Chronometer) findViewById(R.id.chronometer);
+        mProgress = (ProgressBar) findViewById(R.id.progressBar);
 
         // !!
         mediaPlayer = MediaPlayer.create(RecordActivity.this, R.raw.derzkaya);
@@ -102,19 +108,17 @@ public class RecordActivity extends Activity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                microphone_button.setBackground(getResources().getDrawable(R.drawable.micro_on));
+                microphone_button.setBackgroundResource(R.drawable.micro_on);
 
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     microphoneDown = true;
-
                     mediaPlayer.setVolume(0, 0);
 
 
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     microphoneDown = false;
-
-                    microphone_button.setBackground(getResources().getDrawable(R.drawable.micro_off));
+                    microphone_button.setBackgroundResource(R.drawable.micro_off);
                     mediaPlayer.setVolume(1, 1);
 
 
@@ -142,9 +146,9 @@ public class RecordActivity extends Activity {
 
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    backToMain.setBackground(getResources().getDrawable(R.drawable.back_off));
+                    backToMain.setBackgroundResource(R.drawable.back_off);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    backToMain.setBackground(getResources().getDrawable(R.drawable.back_on));
+                    backToMain.setBackgroundResource(R.drawable.back_on);
                     onBackPressed();
                 }
 
@@ -155,7 +159,7 @@ public class RecordActivity extends Activity {
 
         File workingDir = MainActivity.baseExternalDirectory;
 
-        videoFile = new File(workingDir, "capturedvideo.3gp"); //
+        videoFile = new File(workingDir, capturedVideo); //
         surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
 
         SurfaceHolder holder = surfaceView.getHolder();
@@ -236,9 +240,10 @@ public class RecordActivity extends Activity {
         finish();
     }
 
-     private void startRecord(View view) throws IOException {
 
-         recordButton.setBackground(getResources().getDrawable(R.drawable.stop));
+    private void startRecord(View view) throws IOException {
+
+         recordButton.setBackgroundResource(R.drawable.stop);
 
          audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE,
                  RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, voiceBufferSize);
@@ -247,26 +252,33 @@ public class RecordActivity extends Activity {
 
             isRecording = false;
 
-            mediaPlayer.stop();
-            mediaPlayer.release();
-            audioRecord.release();
             chronometer.stop();
+            mediaPlayer.stop();
+            audioRecord.stop();
 //            progressThread.destroy();
+
+            new AddAudioToVideoAsyncTask(recorderedVoice).execute();
+
+            Intent intent = new Intent(this, ResultActivity.class);
+            startActivity(intent);
+            overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
 
             if (mediaRecorder != null) {
                 mediaRecorder.stop();
                 releaseMediaRecorder();
             }
 
-            Intent intent = new Intent(this, ResultActivity.class);
-            startActivity(intent);
-            overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
-
+            mediaPlayer.release();
+            audioRecord.release();
             finish();
 
         }else{
 
             isRecording = true;
+
+            chronometer.setBase(SystemClock.elapsedRealtime());
+            chronometer.start();
+            progressThread.start();
 
             audioRecord.startRecording();
             startReadAudioRecord();
@@ -277,12 +289,6 @@ public class RecordActivity extends Activity {
             }else{
                 releaseMediaRecorder();
             }
-
-            chronometer = (Chronometer) findViewById(R.id.chronometer);
-            mProgress = (ProgressBar) findViewById(R.id.progressBar);
-            chronometer.setBase(SystemClock.elapsedRealtime());
-            chronometer.start();
-            progressThread.start();
             mediaPlayer.start();
 
         }
@@ -323,9 +329,11 @@ public class RecordActivity extends Activity {
 
                 }
                 try {
-                    Log.d("FOS","FOS length = ");
+
                     fin.close();
+                    fos.flush();
                     fos.close();
+                    Log.d("MY", " CLOSED !");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -344,21 +352,15 @@ public class RecordActivity extends Activity {
 
         mediaRecorder.setCamera(camera);
 
- //       mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-//        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-//        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-//        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-//        mediaRecorder.setAudioChannels(2);
-//        mediaRecorder.
-//
 
-//        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
-//        mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-
-        // has profile
-        mediaRecorder.setProfile(CamcorderProfile
-                .get(CamcorderProfile.QUALITY_TIME_LAPSE_HIGH));
+        // every phone has LOW profile.
+        if (CamcorderProfile.hasProfile(CamcorderProfile.QUALITY_TIME_LAPSE_HIGH)) {
+            mediaRecorder.setProfile(CamcorderProfile
+                    .get(CamcorderProfile.QUALITY_TIME_LAPSE_HIGH));
+        }else{
+            mediaRecorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_TIME_LAPSE_LOW));
+        }
 
 
         mediaRecorder.setOrientationHint(90);
@@ -374,6 +376,8 @@ public class RecordActivity extends Activity {
             public void onInfo(MediaRecorder mr, int what, int extra) {
                 if(what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED){
 
+                    chronometer.stop();
+
                     if (mediaRecorder != null) {
                         mediaRecorder.stop();
                         releaseMediaRecorder();
@@ -381,6 +385,8 @@ public class RecordActivity extends Activity {
 
                     mediaPlayer.stop();
                     mediaPlayer.release();
+
+                    new AddAudioToVideoAsyncTask(recorderedVoice).execute();
 
 
 
@@ -413,6 +419,7 @@ public class RecordActivity extends Activity {
             camera.lock();
         }
     }
+
 
 
 }

@@ -1,6 +1,7 @@
 package com.dev.IDAP.derzkaya;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -40,30 +41,31 @@ import java.util.Date;
 public class ResultActivity extends Activity {
 
     VideoView videoView;
-
-    File DCIMdir;
-
+    boolean videoViewPathExist = false;
     Uri videoFileUri;
 
     ImageButton save_button;
-
     ImageButton backToMain;
 
     CallbackManager callbackManager;
     ShareDialog shareDialog;
 
+    static ProgressDialog dialog ;
+
+    String resultFileStringName = "/resultVideo.mp4";
+    File resultVideoFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
+        dialog = new ProgressDialog(this);
+        dialog.setMessage(" Prepearing your video ! It could take a while . . .");
+        dialog.show();
 
-        DCIMdir = Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM);
-
-        final File f = new File(DCIMdir + "/myvideo.3gp");
-        videoFileUri = Uri.fromFile(f);
+        resultVideoFile = new File(Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + resultFileStringName);
 
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
@@ -95,21 +97,20 @@ public class ResultActivity extends Activity {
             public boolean onTouch(View v, MotionEvent event) {
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    save_button.setBackground(getResources().getDrawable(R.drawable.save_off));
+                    save_button.setBackgroundResource(R.drawable.save_off);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    save_button.setBackground(getResources().getDrawable(R.drawable.save_on));
+                    save_button.setBackgroundResource(R.drawable.save_on);
                     // Do save actions
 
                     save_button.setEnabled(false);
-                    //File moviesDir = Environment
-                      //      .getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES); where do I need to store video?
-
-
-                    DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH:mm:ss");
+                    // some media players can't play videos with ":" in name
+                    DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH_mm_ss");
                     String date = dateFormat.format(new Date());
-                    String outputFileName = "/DerzkayaVID_" + date + ".3gp";
-                    Log.d("MY TAG", "DATE IS - " + date);
-                    moveFile(DCIMdir + "/myvideo.3gp", DCIMdir, outputFileName);
+                    String outputFileName = "/DerzkayaVID" + date + ".mp4";
+                    File videoFileWithDateName = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + outputFileName);
+                    renameFile(resultVideoFile, videoFileWithDateName);
+                    videoView.setVideoPath(videoFileWithDateName.getAbsolutePath());
+                    videoViewPathExist = true;
                 }
 
                 return true;
@@ -123,9 +124,9 @@ public class ResultActivity extends Activity {
 
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    backToMain.setBackground(getResources().getDrawable(R.drawable.back_off));
+                    backToMain.setBackgroundResource(R.drawable.back_off);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    backToMain.setBackground(getResources().getDrawable(R.drawable.back_on));
+                    backToMain.setBackgroundResource(R.drawable.back_on);
                     onBackPressed();
                 }
 
@@ -135,23 +136,19 @@ public class ResultActivity extends Activity {
 
 
         videoView = (VideoView) findViewById(R.id.videoView);
-        videoView.setVideoPath(DCIMdir + "/myvideo.3gp");
 
 
         videoView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
+                if (!videoViewPathExist) videoView.setVideoPath(resultVideoFile.getAbsolutePath());
+
                 if(!videoView.isPlaying()) {
-                    Log.d("MY", "touched!");
-                    videoView.start();
-
-
+                        videoView.start();
                 }else {
                     if(videoView.isPlaying()){
-                        Log.d("MY", "touched again!");
                         videoView.pause();
-
                     }
 
                 }
@@ -165,6 +162,7 @@ public class ResultActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+        deleteTempFiles(MainActivity.baseExternalDirectory.getAbsolutePath());
         overridePendingTransition(R.anim.pull_in_right, R.anim.push_out_left);
         finish();
     }
@@ -182,10 +180,23 @@ public class ResultActivity extends Activity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        deleteTempFiles(MainActivity.baseExternalDirectory.getAbsolutePath());
+    }
+
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_result, menu);
         return true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        deleteTempFiles(MainActivity.baseExternalDirectory.getAbsolutePath());
     }
 
     @Override
@@ -205,37 +216,23 @@ public class ResultActivity extends Activity {
 
     public void shareOnFacebook(View view) throws IOException {
 
-        // share on facebook button realization
-
-        // TEMPORARY!
-
-        String audiom4a = DCIMdir + "/" + "derzkaya1.m4a";
-
-        //String audioaac = DCIMdir + "/" + "derzkayaaac.aac";
-       // new AddAudioToVideoAsyncTask(audiom4a).execute();
-
-
         if(checkFacebookAppAvailability()){
-
 
             if (ShareDialog.canShow(ShareVideoContent.class)) {
                 ShareVideo video = new ShareVideo.Builder()
                         .setLocalUrl(videoFileUri)
                         .build();
-
-
+                Log.d("MY", "facebook");
 
                 ShareVideoContent content = new ShareVideoContent.Builder()
                         .setVideo(video)
                         .build();
-
 
                 shareDialog.show(content);
             }
 
         }else{
             Toast.makeText(ResultActivity.this, "whooops! Looks like you haven't facebook app.", Toast.LENGTH_SHORT).show();
-
         }
     }
 
@@ -250,37 +247,31 @@ public class ResultActivity extends Activity {
         }
     }
 
-    private void moveFile(String inputFile, File outputPath, String outputFileName) {
+    private void renameFile(File inputFile, File outputFile) {
 
-        InputStream in = null;
-        OutputStream out = null;
-        try {
+        inputFile.renameTo(outputFile);
+        Toast.makeText(ResultActivity.this, "Video saved to SD card", Toast.LENGTH_SHORT).show();
 
-            in = new FileInputStream(inputFile);
-            out = new FileOutputStream(outputPath + "/Camera" + outputFileName);
+    }
 
+    private void deleteTempFiles(String directoryWithTempFiles){
 
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
+        File dir = new File(directoryWithTempFiles);
+        File[] children = dir.listFiles();
+        for (int i = 0; i < children.length; i++) {
+            if (children[i].isDirectory()){
+                deleteTempFiles(children[i].getAbsolutePath());
+            }else{
+                if (children[i].exists()) children[i].delete();
             }
-            in.close();
-            in = null;
-
-            // write the output file
-            out.flush();
-            out.close();
-            out = null;
-
-            // delete the original file
-            //new File(inputPath + inputFile).delete();
-
-            Toast.makeText(ResultActivity.this, "Video saved", Toast.LENGTH_SHORT).show();
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+
+        // Delete special resultVideo if Exist !
+        File resultVideo = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + resultFileStringName);
+        if (resultVideo.exists()) resultVideo.delete();
+
+        Log.d("MY", "FILES DELETED!");
+
     }
 
 }

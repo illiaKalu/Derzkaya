@@ -51,9 +51,9 @@ public class MainActivity extends Activity {
             public boolean onTouch(View v, MotionEvent event) {
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    toRecordActivityButton.setBackground(getResources().getDrawable(R.drawable.record_)); // find out methods, which works properly on old APIs!!
+                    toRecordActivityButton.setBackgroundResource((R.drawable.record_)); // find out methods, which works properly on old APIs!!
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    toRecordActivityButton.setBackground(getResources().getDrawable(R.drawable.record));
+                    toRecordActivityButton.setBackgroundResource(R.drawable.record);
                     Intent intent = new Intent(MainActivity.this, RecordActivity.class);
                      startActivity(intent);
                     overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
