@@ -2,10 +2,12 @@ package com.dev.IDAP.derzkaya;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Environment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -28,20 +30,12 @@ import com.facebook.share.widget.ShareDialog;
 
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 
 public class ResultActivity extends Activity {
 
     VideoView videoView;
-    boolean videoViewPathExist = false;
     Uri videoFileUri;
 
     ImageButton save_button;
@@ -49,24 +43,26 @@ public class ResultActivity extends Activity {
 
     CallbackManager callbackManager;
     ShareDialog shareDialog;
+    private String errorMsg = "whooops! Internet connection failed OR you do NOT have facebook app.";
 
     static ProgressDialog dialog ;
 
-    String resultFileStringName = "/resultVideo.mp4";
-    File resultVideoFile;
+    private String videoSavedMsg = "Video saved to SD card";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
+
+        // create and show progress dialog, which will wait for merging stuff done
+        // will be dissmissed by addAudioToVideoAsyncTask class
         dialog = new ProgressDialog(this);
         dialog.setMessage(" Prepearing your video ! It could take a while . . .");
         dialog.show();
 
-        resultVideoFile = new File(Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + resultFileStringName);
-
+        // init facebook SDK, callback manager and share dialog
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
         shareDialog = new ShareDialog(ResultActivity.this);
@@ -96,21 +92,16 @@ public class ResultActivity extends Activity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
+                // changing buttons background
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     save_button.setBackgroundResource(R.drawable.save_off);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     save_button.setBackgroundResource(R.drawable.save_on);
-                    // Do save actions
 
+                    // preventing multiple click situation
                     save_button.setEnabled(false);
-                    // some media players can't play videos with ":" in name
-                    DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH_mm_ss");
-                    String date = dateFormat.format(new Date());
-                    String outputFileName = "/DerzkayaVID" + date + ".mp4";
-                    File videoFileWithDateName = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + outputFileName);
-                    renameFile(resultVideoFile, videoFileWithDateName);
-                    videoView.setVideoPath(videoFileWithDateName.getAbsolutePath());
-                    videoViewPathExist = true;
+
+                    Toast.makeText(ResultActivity.this, videoSavedMsg, Toast.LENGTH_SHORT).show();
                 }
 
                 return true;
@@ -118,12 +109,14 @@ public class ResultActivity extends Activity {
         });
         backToMain = (ImageButton) findViewById(R.id.back_to_main_button);
 
+        // back to main activity button
         backToMain.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
 
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    // changing background of a back button
                     backToMain.setBackgroundResource(R.drawable.back_off);
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     backToMain.setBackgroundResource(R.drawable.back_on);
@@ -138,11 +131,15 @@ public class ResultActivity extends Activity {
         videoView = (VideoView) findViewById(R.id.videoView);
 
 
+        // video show logic
         videoView.setOnTouchListener(new View.OnTouchListener() {
+
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                if (!videoViewPathExist) videoView.setVideoPath(resultVideoFile.getAbsolutePath());
+                // decided from witch file grub a video source to show
+                // depends on was Save method called or not
+                videoView.setVideoPath(AddAudioToVideoAsyncTask.resultVideo);
 
                 if(!videoView.isPlaying()) {
                         videoView.start();
@@ -158,6 +155,69 @@ public class ResultActivity extends Activity {
         });
 
     }
+
+    // sharing logic
+    public void shareOnFacebook(View view) throws IOException {
+
+        // decided from witch file grub a video source to share
+        // depends on was Save method called or not
+        videoFileUri = Uri.parse("file://" + AddAudioToVideoAsyncTask.resultVideo);
+
+        Log.d("MY", "FACEBOOK PATH - " + videoFileUri);
+
+        if(checkFacebookAppAvailability() & isNetworkConnected()){
+            if (ShareDialog.canShow(ShareVideoContent.class)) {
+                ShareVideo videoToShare = new ShareVideo.Builder()
+                        .setLocalUrl(videoFileUri)
+                        .build();
+
+                ShareVideoContent content = new ShareVideoContent.Builder()
+                        .setVideo(videoToShare)
+                        .build();
+
+                shareDialog.show(content);
+            }
+        }else{
+            view.setEnabled(false);
+            Toast.makeText(ResultActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // checking facebook application availability
+    // facebook app on android called katana
+    private boolean checkFacebookAppAvailability() {
+        try{
+            ApplicationInfo info = getPackageManager().
+                    getApplicationInfo("com.facebook.katana", 0 );
+            return true;
+        } catch( PackageManager.NameNotFoundException e ){
+            return false;
+        }
+    }
+
+    // network availability check
+    private boolean isNetworkConnected() {
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connManager.getActiveNetworkInfo();
+        return (networkInfo != null ) ? true : false;
+    }
+
+    // deleting temp files
+    private void deleteTempFiles(String directoryWithTempFiles){
+
+        // getting directory tree for deleting all sub files for sure. Clean up whole app folder
+        // !important: recursive call ( infinity loop danger )
+        File dir = new File(directoryWithTempFiles);
+        File[] children = dir.listFiles();
+        for (int i = 0; i < children.length; i++) {
+            if (children[i].isDirectory()){
+                deleteTempFiles(children[i].getAbsolutePath());
+            }else{
+                if (children[i].exists()) children[i].delete();
+            }
+        }
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -196,6 +256,7 @@ public class ResultActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // delete temp files from application folder ~ 50 MB
         deleteTempFiles(MainActivity.baseExternalDirectory.getAbsolutePath());
     }
 
@@ -212,66 +273,6 @@ public class ResultActivity extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public void shareOnFacebook(View view) throws IOException {
-
-        if(checkFacebookAppAvailability()){
-
-            if (ShareDialog.canShow(ShareVideoContent.class)) {
-                ShareVideo video = new ShareVideo.Builder()
-                        .setLocalUrl(videoFileUri)
-                        .build();
-                Log.d("MY", "facebook");
-
-                ShareVideoContent content = new ShareVideoContent.Builder()
-                        .setVideo(video)
-                        .build();
-
-                shareDialog.show(content);
-            }
-
-        }else{
-            Toast.makeText(ResultActivity.this, "whooops! Looks like you haven't facebook app.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private boolean checkFacebookAppAvailability() {
-
-        try{
-            ApplicationInfo info = getPackageManager().
-                    getApplicationInfo("com.facebook.katana", 0 );
-            return true;
-        } catch( PackageManager.NameNotFoundException e ){
-            return false;
-        }
-    }
-
-    private void renameFile(File inputFile, File outputFile) {
-
-        inputFile.renameTo(outputFile);
-        Toast.makeText(ResultActivity.this, "Video saved to SD card", Toast.LENGTH_SHORT).show();
-
-    }
-
-    private void deleteTempFiles(String directoryWithTempFiles){
-
-        File dir = new File(directoryWithTempFiles);
-        File[] children = dir.listFiles();
-        for (int i = 0; i < children.length; i++) {
-            if (children[i].isDirectory()){
-                deleteTempFiles(children[i].getAbsolutePath());
-            }else{
-                if (children[i].exists()) children[i].delete();
-            }
-        }
-
-        // Delete special resultVideo if Exist !
-        File resultVideo = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + resultFileStringName);
-        if (resultVideo.exists()) resultVideo.delete();
-
-        Log.d("MY", "FILES DELETED!");
-
     }
 
 }

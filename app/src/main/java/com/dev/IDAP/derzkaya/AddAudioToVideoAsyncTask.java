@@ -29,6 +29,9 @@ import java.io.OutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 
 public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
@@ -36,13 +39,11 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
     String videoToFilePath;
     String videoFromFilePath;
 
-
-
     private FFmpegFrameRecorder recorder;
     private FFmpegFrameGrabber grabberVideo;
 
     private FrameGrabber grabberAud;
-    private String resultingFile = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/resultVideo.mp4";
+    static String resultVideo;
 
 
     public AddAudioToVideoAsyncTask(String audioFile){
@@ -62,6 +63,14 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
+
+        // generating date as a specific name for each video
+        // some media players can't play videos with ":" in name
+        // use "_" instead of ":"
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH_mm_ss");
+        String date = dateFormat.format(new Date());
+        String outputFileName = "/DerzkayaVID" + date + ".mp4";
+        resultVideo = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + outputFileName;
 
         try {
             grabberVideo.start();
@@ -168,7 +177,7 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
 
         FileOutputStream fos = null;
         try {
-            fos = new FileOutputStream(resultingFile);
+            fos = new FileOutputStream(resultVideo);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

@@ -255,21 +255,22 @@ public class RecordActivity extends Activity {
             chronometer.stop();
             mediaPlayer.stop();
             audioRecord.stop();
-//            progressThread.destroy();
-
-            new AddAudioToVideoAsyncTask(recorderedVoice).execute();
 
             Intent intent = new Intent(this, ResultActivity.class);
             startActivity(intent);
             overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
+
+            mediaPlayer.release();
+            audioRecord.release();
 
             if (mediaRecorder != null) {
                 mediaRecorder.stop();
                 releaseMediaRecorder();
             }
 
-            mediaPlayer.release();
-            audioRecord.release();
+            new AddAudioToVideoAsyncTask(recorderedVoice).execute();
+
+
             finish();
 
         }else{
@@ -376,26 +377,30 @@ public class RecordActivity extends Activity {
             public void onInfo(MediaRecorder mr, int what, int extra) {
                 if(what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED){
 
+                    isRecording = false;
+
                     chronometer.stop();
+                    mediaPlayer.stop();
+                    audioRecord.stop();
+
+                    Intent intent = new Intent(RecordActivity.this, ResultActivity.class);
+                    startActivity(intent);
+                    overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
+
+                    mediaPlayer.release();
+                    audioRecord.release();
 
                     if (mediaRecorder != null) {
                         mediaRecorder.stop();
                         releaseMediaRecorder();
                     }
 
-                    mediaPlayer.stop();
-                    mediaPlayer.release();
-
                     new AddAudioToVideoAsyncTask(recorderedVoice).execute();
 
 
-
-                    Intent intent = new Intent(RecordActivity.this, ResultActivity.class);
-                    startActivity(intent);
-                    overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
-
-
                     finish();
+
+
 
                 }
             }
