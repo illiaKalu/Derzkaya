@@ -5,10 +5,12 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,9 +47,9 @@ public class ResultActivity extends Activity {
     ShareDialog shareDialog;
     private String errorMsg = "whooops! Internet connection failed OR you do NOT have facebook app.";
 
-    static ProgressDialog dialog ;
-
     private String videoSavedMsg = "Video saved to SD card";
+    private int pausedPossition;
+    private boolean off;
 
 
     @Override
@@ -55,14 +57,8 @@ public class ResultActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
-
-        // create and show progress dialog, which will wait for merging stuff done
-        // will be dissmissed by addAudioToVideoAsyncTask class
-        dialog = new ProgressDialog(this);
-        dialog.setMessage(" Prepearing your video ! It could take a while . . .");
-        dialog.show();
-
         // init facebook SDK, callback manager and share dialog
+
         FacebookSdk.sdkInitialize(getApplicationContext());
         callbackManager = CallbackManager.Factory.create();
         shareDialog = new ShareDialog(ResultActivity.this);
@@ -130,7 +126,6 @@ public class ResultActivity extends Activity {
 
         videoView = (VideoView) findViewById(R.id.videoView);
 
-
         // video show logic
         videoView.setOnTouchListener(new View.OnTouchListener() {
 
@@ -139,14 +134,14 @@ public class ResultActivity extends Activity {
 
                 // decided from witch file grub a video source to show
                 // depends on was Save method called or not
-                videoView.setVideoPath(AddAudioToVideoAsyncTask.resultVideo);
+                if (!off) videoView.setVideoPath(AddAudioToVideoAsyncTask.resultVideo);
 
                 if(!videoView.isPlaying()) {
-                        videoView.start();
+                     videoView.start();
+                     off = true;
                 }else {
-                    if(videoView.isPlaying()){
+                    if (videoView.isPlaying())
                         videoView.pause();
-                    }
 
                 }
 
@@ -205,8 +200,8 @@ public class ResultActivity extends Activity {
     // deleting temp files
     private void deleteTempFiles(String directoryWithTempFiles){
 
-        // getting directory tree for deleting all sub files for sure. Clean up whole app folder
-        // !important: recursive call ( infinity loop danger )
+//         getting directory tree for deleting all sub files for sure. Clean up whole app folder
+//         !important: recursive call ( infinity loop danger )
         File dir = new File(directoryWithTempFiles);
         File[] children = dir.listFiles();
         for (int i = 0; i < children.length; i++) {

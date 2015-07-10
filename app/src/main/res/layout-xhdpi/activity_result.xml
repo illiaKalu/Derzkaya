@@ -15,10 +15,10 @@
             android:background="@drawable/logo_mini"
             android:layout_gravity="top|center_horizontal" />
 <RelativeLayout
-    android:layout_width="313dp"
+    android:layout_width="164dp"
     android:layout_height="134dp"
     android:gravity="center"
-    android:layout_weight="0.45">
+    android:layout_weight="0.35">
         <VideoView
             android:layout_width="match_parent"
             android:layout_height="match_parent"

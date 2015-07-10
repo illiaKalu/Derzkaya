@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
                 } else if (event.getAction() == MotionEvent.ACTION_UP) {
                     toRecordActivityButton.setBackgroundResource(R.drawable.record);
                     Intent intent = new Intent(MainActivity.this, RecordActivity.class);
-                     startActivity(intent);
+                    startActivity(intent);
                     overridePendingTransition(R.anim.pull_in_left, R.anim.push_out_right);
                 }
                 return true;
