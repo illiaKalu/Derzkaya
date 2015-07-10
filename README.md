@@ -5,7 +5,7 @@ what I need : <br>
 
 
 June 11. I still need todo :
-1) merge video and sound correctly ( mute stuff when needed)
+see last commit
 
 Useful links and stuff: 
 1) http://trac.ffmpeg.org/wiki/Concatenate - audio concat
