@@ -15,7 +15,7 @@
             android:background="@drawable/logo_mini"
             android:layout_gravity="top|center_horizontal" />
 <RelativeLayout
-    android:layout_width="164dp"
+    android:layout_width="280dp"
     android:layout_height="134dp"
     android:gravity="center"
     android:layout_weight="0.35">
@@ -27,9 +27,7 @@
             android:id="@+id/videoView"
             android:layout_gravity="center_horizontal"
             android:clickable="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentTop="true" />
 </RelativeLayout>
 
         <ImageButton

@@ -19,11 +19,13 @@ import com.googlecode.mp4parser.authoring.Track;
 import com.googlecode.mp4parser.authoring.builder.DefaultMp4Builder;
 import com.googlecode.mp4parser.authoring.container.mp4.MovieCreator;
 
+import org.bytedeco.javacpp.opencv_core;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.FrameGrabber;
 import org.bytedeco.javacv.FrameRecorder;
+import org.bytedeco.javacv.OpenCVFrameConverter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,6 +55,7 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
     TimeStamps timeStamp;
 
     ArrayList<TimeStamps> timeStampses;
+    ArrayList<byte[]> picInBytes;
 
     static String resultVideo;
 
@@ -62,13 +65,15 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
     private boolean recordMicro;
     private float alpha = 1.0f;
 
-    public AddAudioToVideoAsyncTask(File recordedAudioFile, File recordedVideoFile, File musicFile, ArrayList<TimeStamps> timeStampses){
+    public AddAudioToVideoAsyncTask(File recordedAudioFile, File recordedVideoFile, File musicFile, ArrayList<TimeStamps> timeStampses, ArrayList<byte[]> pictureInBytes){
 
     grabberMusicAudio = new FFmpegFrameGrabber(musicFile.getAbsolutePath()); // replace with file in RAW folder.
     grabberRecordedAudio = new FFmpegFrameGrabber(recordedAudioFile.getAbsolutePath());
     grabberVideo = new FFmpegFrameGrabber(recordedVideoFile.getAbsolutePath());
     this.timeStampses = timeStampses;
     timeSamplesIterator = timeStampses.iterator();
+
+        this.picInBytes = pictureInBytes;
 
     }
 
@@ -79,7 +84,7 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
         // generating date as a specific name for each video
         // some media players can't play videos with ":" in name
         // use "_" instead of ":"
-        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy_HH_mm_ss");
+        DateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
         String date = dateFormat.format(new Date());
         String outputFileName = "/DerzkayaVID" + date + ".mp4";
 
@@ -95,14 +100,22 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
 
 
 
-        recorder = new FFmpegFrameRecorder(MainActivity.baseExternalDirectory + "/FFMpegMergeResultMicrophoneAndVoice.m4a", grabberRecordedAudio.getAudioChannels());
+        //recorder = new FFmpegFrameRecorder(MainActivity.baseExternalDirectory + "/FFMpegMergeResultMicrophoneAndVoice.m4a", grabberRecordedAudio.getAudioChannels());
+        recorder = new FFmpegFrameRecorder(resultVideo, grabberVideo.getImageWidth(), grabberVideo.getImageHeight(), grabberRecordedAudio.getAudioChannels());
 
         recorder.setAudioCodec(grabberRecordedAudio.getAudioCodec());
         recorder.setAudioBitrate(grabberRecordedAudio.getAudioBitrate());
         //recorder.setFrameNumber(grabberAud.getFrameNumber());
-        recorder.setFormat(grabberRecordedAudio.getFormat());
+       // recorder.setFormat(grabberRecordedAudio.getFormat());
         //recorder.setTimestamp(grabberAud.getTimestamp());
         recorder.setSampleRate(grabberRecordedAudio.getSampleRate());
+
+        recorder.setFrameRate(grabberVideo.getFrameRate());
+        recorder.setVideoBitrate(grabberVideo.getVideoBitrate());
+        recorder.setFormat("mp4");
+        recorder.setVideoCodec(grabberVideo.getVideoCodec());
+        recorder.setVideoOption("preset", "ultrafast");
+        //recorder.setVideoOption("preset", "rotate=90");
 
 
         Log.d("MY", "STILL ALIVE AFTER GRABBERFIRST.START");
@@ -120,7 +133,7 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
         super.onPostExecute(aVoid);
 
 
-        if (RecordActivity.dialog != null) RecordActivity.dialog.dismiss();
+        //if (RecordActivity.dialog != null) RecordActivity.dialog.dismiss();
 
         try {
             grabberRecordedAudio.release();
@@ -137,6 +150,8 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
 
         Frame audioFrame = null;
         Frame musicFrame = null;
+        Frame videoFrame = null;
+
 
         if (timeSamplesIterator.hasNext()) timeStamp = (TimeStamps) timeSamplesIterator.next();
 
@@ -186,17 +201,58 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
 
                 }
 
+
                 audioFrame.samples[0] = musicBuffer;
 
-              //  videoFrame = grabberVideo.grabFrame();
+                videoFrame = grabberVideo.grabFrame();
+
+                if (videoFrame != null) {
+
+                    videoFrame.imageHeight *=  0.2;
+                    videoFrame.imageWidth =  videoFrame.imageHeight;
+
+                }else {
+                    break;
+                }
+
+                //audioFrame.image = videoFrame.image;
+
+//                if( videoFrame != null){
+//                    videoFrame.image[0] = ByteBuffer.wrap(picInBytes.get(0));
+//                    Log.d("MY", "NOT null vid frame");
+//                }else{
+//                    Log.d("MY", "null vid frame");
+//                }
+
+//                Log.d("MY", " arrauList size - " + picInBytes.size());
+//
+//                recorder.recordImage(grabberVideo.getImageWidth(), grabberVideo.getImageHeight(), videoFrame.imageDepth,
+//                        videoFrame.imageChannels, videoFrame.imageStride, grabberVideo.getPixelFormat(), ByteBuffer.wrap(picInBytes.get(0)));
+
+                recorder.record(videoFrame);
                 recorder.record(audioFrame);
               //  recorder.record(videoFrame);
 
             }
 
+//            recorder.setImageHeight(grabberVideo.getImageHeight());
+//            recorder.setImageWidth(grabberVideo.getImageWidth());
+
+
+
+//
+//
+//
+//            while ( (videoFrame = grabberVideo.grabFrame()) != null){
+//
+//                recorder.record(videoFrame);
+//
+//            }
+
             recorder.stop();
             grabberMusicAudio.stop();
             grabberRecordedAudio.stop();
+            grabberVideo.stop();
 
 
         } catch (FrameGrabber.Exception fge) {
@@ -210,52 +266,54 @@ public class AddAudioToVideoAsyncTask extends AsyncTask< Void, Void, Void> {
 
 
 
-        Movie video = null;
-        try {
-            video = new MovieCreator().build(MainActivity.baseExternalDirectory + "/VideoResultFromCamera.mp4");
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        Movie video = null;
+//        try {
+//            video = new MovieCreator().build(MainActivity.baseExternalDirectory + "/VideoResultFromCamera.mp4");
+//        } catch (RuntimeException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//
+//        Movie audio = null;
+//        try {
+//            audio = new MovieCreator().build(MainActivity.baseExternalDirectory + "/FFMpegMergeResultMicrophoneAndVoice.m4a");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        } catch (NullPointerException e) {
+//            e.printStackTrace();
+//        }
+//        Track audioTrack = audio.getTracks().get(0);
+//        Track videoTrack = video.getTracks().get(0);
+//        Log.d("TAG","audioDuration = "+audioTrack.getDuration());
+//        Log.d("TAG","videoDuration = "+videoTrack.getDuration());
+//
+//        Movie mov = new Movie();
+//        mov.addTrack(videoTrack);
+//        mov.addTrack(audioTrack);
+//
+//
+//        Container out = new DefaultMp4Builder().build(mov);
+//
+//        FileOutputStream fos = null;
+//        try {
+//            fos = new FileOutputStream(resultVideo);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+//        BufferedWritableFileByteChannel byteBufferByteChannel = new BufferedWritableFileByteChannel(fos);
+//        try {
+//            out.writeContainer(byteBufferByteChannel);
+//            byteBufferByteChannel.close();
+//            fos.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
-        Movie audio = null;
-        try {
-            audio = new MovieCreator().build(MainActivity.baseExternalDirectory + "/FFMpegMergeResultMicrophoneAndVoice.m4a");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-        Track audioTrack = audio.getTracks().get(0);
-        Track videoTrack = video.getTracks().get(0);
-        Log.d("TAG","audioDuration = "+audioTrack.getDuration());
-        Log.d("TAG","videoDuration = "+videoTrack.getDuration());
-
-        Movie mov = new Movie();
-        mov.addTrack(videoTrack);
-        mov.addTrack(audioTrack);
-
-
-        Container out = new DefaultMp4Builder().build(mov);
-
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(resultVideo);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        BufferedWritableFileByteChannel byteBufferByteChannel = new BufferedWritableFileByteChannel(fos);
-        try {
-            out.writeContainer(byteBufferByteChannel);
-            byteBufferByteChannel.close();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        Log.d("MY", " done with all stuff");
         return null;
     }
+
 
     private class BufferedWritableFileByteChannel implements WritableByteChannel {
         private static final int BUFFER_CAPACITY = 1000000;

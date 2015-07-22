@@ -29,6 +29,10 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 
 
+import org.bytedeco.javacv.FFmpegFrameRecorder;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.FrameRecorder;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -36,6 +40,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 
@@ -71,6 +76,14 @@ public class RecordActivity extends Activity {
 
     static ProgressDialog dialog ;
 
+    ArrayList<byte[]> pictureInBytes = new ArrayList<byte[]>();
+    int counter;
+    long timeStart;
+    int pixelFormat;
+    FFmpegFrameRecorder frameRecorder;
+    private boolean recording;
+
+
 
     ArrayList<TimeStamps> timeStampses = new ArrayList<TimeStamps>();
     private long currentTimeInMillis;
@@ -100,6 +113,9 @@ public class RecordActivity extends Activity {
                     camera.setDisplayOrientation(90);
                     camera.setPreviewDisplay(holder);
                     camera.startPreview();
+
+//                    Camera.Parameters par = camera.getParameters();
+//                    pixelFormat = par.getPictureFormat();
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -223,13 +239,14 @@ public class RecordActivity extends Activity {
                 audioMediaRecorder.stop();
             }
 
+            recording = false;
 
-            new AddAudioToVideoAsyncTask(recordedAudioFile, recordedVideoFile, loadMusicFileFromRawFolder(), timeStampses).execute();
+            new AddAudioToVideoAsyncTask(recordedAudioFile, recordedVideoFile, loadMusicFileFromRawFolder(), timeStampses, pictureInBytes).execute();
 
 
-            dialog = new ProgressDialog(this);
-            dialog.setMessage(" Prepearing your video ! It could take a while . . .");
-            dialog.show();
+//            dialog = new ProgressDialog(this);
+//            dialog.setMessage(" Prepearing your video ! It could take a while . . .");
+//            dialog.show();
 
             Intent intent = new Intent(this, ResultActivity.class);
             startActivity(intent);
@@ -241,6 +258,8 @@ public class RecordActivity extends Activity {
 
             isRecording = true;
             progressBarUpdate = true;
+
+            recording = true;
 
 
             if (chronometer != null & mediaPlayer != null)
@@ -254,6 +273,7 @@ public class RecordActivity extends Activity {
             }else{
                 releaseVideoAudioMediaRecorders();
             }
+
 
              mediaPlayer.start();
 
@@ -387,6 +407,27 @@ public class RecordActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        //
+
+         //camera.setPreviewCallback(new Pic());
+        //camera.setPreviewCallbackWithBuffer(new Pic());
+//        recording = true;
+//        int displayWidth = 720;
+//        int displayHeight = 1280;
+//
+//        frameRecorder = new FFmpegFrameRecorder(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/adsasds.mp4", displayWidth , displayHeight, 2);
+//
+//        frameRecorder.setPixelFormat(pixelFormat);
+//
+//        try {
+//            frameRecorder.start();
+//        } catch (FrameRecorder.Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        timeStart = System.currentTimeMillis();
+        //camera.setPreviewCallback(new Pic());
     }
 
     @Override
@@ -424,8 +465,89 @@ public class RecordActivity extends Activity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+
+
+        try {
+            frameRecorder.stop();
+        } catch (FrameRecorder.Exception e) {
+            e.printStackTrace();
+        }
+
         overridePendingTransition(R.anim.pull_in_right, R.anim.push_out_left);
         finish();
     }
 
+//    private class Pic implements Camera.PreviewCallback{
+//
+//        FFmpegFrameRecorder recorder = new FFmpegFrameRecorder(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/movTest.mp4",
+//                300, 300, 2);
+//
+//        public  Pic(){
+//            try {
+//                recorder.start();
+//            } catch (FrameRecorder.Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        @Override
+//        public void onPreviewFrame(byte[] data, Camera camera) {
+//            //Frame frame = new Frame(720, 1080, 16, 3);
+//
+//
+//            if (recording) {
+//
+//                try {
+//                    recorder.recordImage(300, 300, 8, 2, 8, 20, ByteBuffer.wrap(data));
+//                } catch (FrameRecorder.Exception e) {
+//                    e.printStackTrace();
+//                }
+//
+//
+//            }
+//
+//            //frame.image[0] = ByteBuffer.wrap(data);
+//           //long t = 1000 * (System.currentTimeMillis() - timeStart);
+////            if (t > frameRecorder.getTimestamp()) {
+////                frameRecorder.setTimestamp(t);
+////            }
+//            //Log.d("onPreviewFrame","buffer length = " + buffer.capacity());
+//            // ((ByteBuffer)frame.image[0]).put(data);
+////            try {
+////                if(recording)frameRecorder.record(frame);
+////
+////               // frameRecorder.recordImage(displayWidth, displayHeight, frame.imageDepth, 2, frame.imageStride, pixelFormat, frame.image[0]);
+////            } catch (FrameRecorder.Exception e) {
+////                e.printStackTrace();
+////            }
+//        }
+//
+//
+//    }
+
 }
+
+
+
+//    @Override
+//    public void onPause() {
+//
+//        surfaceView.setVisibility(View.GONE);
+//        holder.removeCallback(surfaceCallback);
+//        if (camera != null)
+//            camera.release();
+//        camera = null;
+//
+//        super.onPause();
+//    }
+//    @Override
+//    public void onResume(){
+//        try {
+//            camera = Camera.open();
+//            holder.addCallback(surfaceCallback);
+//            surfaceView.setVisibility(View.VISIBLE);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        super.onResume();
+//    }

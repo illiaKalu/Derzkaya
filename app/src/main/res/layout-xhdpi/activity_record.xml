@@ -1,9 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:layout_height="match_parent"
     tools:context="com.dev.IDAP.derzkaya.RecordActivity"
     android:background="@drawable/xhdpi_background"
     android:gravity="bottom|center"
@@ -15,7 +12,8 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_marginTop="10dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:weightSum="1">
 
         <Chronometer
             android:layout_width="wrap_content"
@@ -36,11 +34,17 @@
             android:progressDrawable="@drawable/progressbar"
             android:layout_marginBottom="25dp" />
 
-        <SurfaceView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/surfaceView"
-            android:layout_weight="0.5" />
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="318dp"
+            android:layout_weight="0.74">
+
+            <SurfaceView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/surfaceView" />
+
+        </RelativeLayout>
 
         <LinearLayout
             android:orientation="horizontal"
